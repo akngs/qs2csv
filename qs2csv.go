@@ -1,39 +1,24 @@
 package main
 
-
 import (
 	"bufio"
 	"encoding/csv"
 	"flag"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"strings"
-	"net/url"
 )
 
-
-func main() {
-	// Parse command-line arguments
-	columnNamesPtr := flag.String("c", "", "comma-separated list of column names")
-	nilValuePtr := flag.String("n", "", "a string represents nil value")
-	noHeaderPtr := flag.Bool("no-header", false, "do not print header")
-	flag.Parse()
-
-	columnsNames := strings.Split(*columnNamesPtr, ",")
-	if len(columnsNames) == 0 {
-		fmt.Println("Provide one or more columns using -f flag")
-		os.Exit(1)
-	}
+func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, columnNames []string, nilValue string) {
+	csvWriter := csv.NewWriter(writer)
+	fields := make([]string, len(columnNames))
 
 	// Print a header
-	if !*noHeaderPtr {
-		fmt.Println(strings.Join(columnsNames, ","))
+	if !noHeader {
+		csvWriter.Write(columnNames)
 	}
-
-	reader := bufio.NewReader(os.Stdin)
-	writer := csv.NewWriter(os.Stdout)
-	fields := make([]string, len(columnsNames))
 
 	for {
 		// Read a line
@@ -49,17 +34,34 @@ func main() {
 		}
 
 		// Select columns
-		for i, key := range columnsNames {
+		for i, key := range columnNames {
 			value, present := valueMap[key]
 			if present {
 				fields[i] = value[0]
 			} else {
-				fields[i] = *nilValuePtr
+				fields[i] = nilValue
 			}
 		}
 
 		// Print a row
-		writer.Write(fields)
+		csvWriter.Write(fields)
 	}
-	writer.Flush()
+	csvWriter.Flush()
+}
+
+func main() {
+	columnNamesPtr := flag.String("c", "", "comma-separated list of column names")
+	nilValuePtr := flag.String("n", "", "a string represents nil value")
+	noHeaderPtr := flag.Bool("no-header", false, "do not print header")
+	flag.Parse()
+
+	columnNames := strings.Split(*columnNamesPtr, ",")
+	if len(columnNames) == 0 {
+		fmt.Println("Provide one or more columns using -f flag")
+		os.Exit(1)
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	writer := bufio.NewWriter(os.Stdout)
+	ConvertLines(reader, writer, *noHeaderPtr, columnNames, *nilValuePtr)
 }
