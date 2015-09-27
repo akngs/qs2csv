@@ -22,7 +22,12 @@ func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, col
 	}
 
 	fields := make([]string, len(columnNames))
-	valueMap := make(QueryMap)
+
+	// Fill query map to default nil values to skip present-checking
+	queryMap := make(QueryMap)
+	for _, key := range columnNames {
+		queryMap[key] = nilValue
+	}
 
 	for {
 		// Read a line
@@ -32,22 +37,17 @@ func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, col
 		}
 
 		// Parse querystring
-		err = parseQuery(valueMap, strings.TrimRight(line, "\n"))
+		err = parseQuery(queryMap, strings.TrimRight(line, "\n"))
 		if err != nil {
 			panic(err)
 		}
 
 		// Select columns
 		for i, key := range columnNames {
-			value, present := valueMap[key]
-			if present {
-				fields[i] = value
-			} else {
-				fields[i] = nilValue
-			}
+			fields[i] = queryMap[key]
 
-			// Reset valueMap in order to reuse it
-			valueMap[key] = nilValue
+			// Reset query map to reuse it
+			queryMap[key] = nilValue
 		}
 
 		// Print a row
