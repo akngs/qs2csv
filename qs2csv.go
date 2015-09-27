@@ -100,7 +100,7 @@ func main() {
 
 	columnNames := strings.Split(*columnNamesPtr, ",")
 	if len(columnNames) == 0 {
-		fmt.Println("Provide one or more columns using -f flag")
+		fmt.Println("Provide one or more columns using -c flag")
 		os.Exit(1)
 	}
 
