@@ -13,7 +13,7 @@ import (
 
 type QueryMap map[string]string
 
-func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, columnNames []string, nilValue string) {
+func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, columnNames []string, nilValue string) error {
 	csvWriter := csv.NewWriter(writer)
 
 	// Print a header
@@ -39,7 +39,7 @@ func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, col
 		// Parse querystring
 		err = parseQuery(queryMap, strings.TrimRight(line, "\n"))
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		// Select columns
@@ -54,6 +54,8 @@ func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, col
 		csvWriter.Write(fields)
 	}
 	csvWriter.Flush()
+
+	return nil
 }
 
 func parseQuery(m QueryMap, query string) (err error) {

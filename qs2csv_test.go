@@ -10,20 +10,29 @@ import (
 
 func TestConvertLines(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(outBuf), false, []string{"a", "b"}, "")
+	err := ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(outBuf), false, []string{"a", "b"}, "")
+	equals(t, nil, err)
 	equals(t, "a,b\n1,2\n3,4\n", outBuf.String())
 }
 
 func TestConvertLinesWithoutHeading(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(outBuf), true, []string{"a", "b"}, "")
+	err := ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(outBuf), true, []string{"a", "b"}, "")
+	equals(t, nil, err)
 	equals(t, "1,2\n3,4\n", outBuf.String())
 }
 
 func TestConvertLinesWithNilColumn(t *testing.T) {
 	outBuf := new(bytes.Buffer)
-	ConvertLines(toReader("a=1&b=2\nb=3&c=4\n"), bufio.NewWriter(outBuf), false, []string{"a", "c"}, "NA")
+	err := ConvertLines(toReader("a=1&b=2\nb=3&c=4\n"), bufio.NewWriter(outBuf), false, []string{"a", "c"}, "NA")
+	equals(t, nil, err)
 	equals(t, "a,c\n1,NA\nNA,4\n", outBuf.String())
+}
+
+func TestConvertLinesWithMalformedInput(t *testing.T) {
+	outBuf := new(bytes.Buffer)
+	err := ConvertLines(toReader("a=1&b=2\n%XW=3&c=4\n"), bufio.NewWriter(outBuf), false, []string{"a", "c"}, "NA")
+	equals(t, true, err != nil)
 }
 
 func BenchmarkConvertLines(b *testing.B) {
