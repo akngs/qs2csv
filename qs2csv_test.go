@@ -26,6 +26,20 @@ func TestConvertLinesWithNilColumn(t *testing.T) {
 	equals(t, "a,c\n1,NA\nNA,4\n", outBuf.String())
 }
 
+func BenchmarkConvertLines(b *testing.B) {
+	// Prepare logs
+	logs := make([]string, 0, 100000)
+	for i := 0; i < cap(logs); i++ {
+		logs = append(logs, "a=1&b=2&c=3")
+	}
+	logString := strings.Join(logs, "\n")
+
+	// Perform benchmark
+	b.ResetTimer()
+	outBuf := new(bytes.Buffer)
+	ConvertLines(toReader(logString), bufio.NewWriter(outBuf), false, []string{"a", "c"}, "NA")
+}
+
 func equals(t *testing.T, expected interface{}, actual interface{}) {
 	if expected != actual {
 		t.Error(fmt.Sprintf("Expected %#v but %#v", expected, actual))
