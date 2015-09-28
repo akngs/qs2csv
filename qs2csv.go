@@ -13,6 +13,8 @@ import (
 
 type queryMap map[string]string
 
+// ConvertLines takes lines of URL-encoded querystring and converts each line
+// into CSV form.
 func ConvertLines(in *bufio.Reader, out *bufio.Writer, noHeader bool, colNames []string, nilVal string) error {
 	csvWriter := csv.NewWriter(out)
 
