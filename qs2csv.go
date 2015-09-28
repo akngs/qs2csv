@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type QueryMap map[string]string
+type queryMap map[string]string
 
 func ConvertLines(in *bufio.Reader, out *bufio.Writer, noHeader bool, colNames []string, nilVal string) error {
 	csvWriter := csv.NewWriter(out)
@@ -24,7 +24,7 @@ func ConvertLines(in *bufio.Reader, out *bufio.Writer, noHeader bool, colNames [
 	fields := make([]string, len(colNames))
 
 	// Fill query map to default nil values to skip present-checking
-	queryMap := make(QueryMap)
+	queryMap := make(queryMap)
 	for _, key := range colNames {
 		queryMap[key] = nilVal
 	}
@@ -58,7 +58,7 @@ func ConvertLines(in *bufio.Reader, out *bufio.Writer, noHeader bool, colNames [
 	return nil
 }
 
-func parseQuery(m QueryMap, query string) (err error) {
+func parseQuery(m queryMap, query string) (err error) {
 	for query != "" {
 		key := query
 		if i := strings.Index(key, "&"); i >= 0 {
