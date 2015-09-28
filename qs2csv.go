@@ -13,25 +13,25 @@ import (
 
 type QueryMap map[string]string
 
-func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, columnNames []string, nilValue string) error {
-	csvWriter := csv.NewWriter(writer)
+func ConvertLines(in *bufio.Reader, out *bufio.Writer, noHeader bool, colNames []string, nilVal string) error {
+	csvWriter := csv.NewWriter(out)
 
 	// Print a header
 	if !noHeader {
-		csvWriter.Write(columnNames)
+		csvWriter.Write(colNames)
 	}
 
-	fields := make([]string, len(columnNames))
+	fields := make([]string, len(colNames))
 
 	// Fill query map to default nil values to skip present-checking
 	queryMap := make(QueryMap)
-	for _, key := range columnNames {
-		queryMap[key] = nilValue
+	for _, key := range colNames {
+		queryMap[key] = nilVal
 	}
 
 	for {
 		// Read a line
-		line, err := reader.ReadString('\n')
+		line, err := in.ReadString('\n')
 		if err == io.EOF {
 			break
 		}
@@ -43,11 +43,11 @@ func ConvertLines(reader *bufio.Reader, writer *bufio.Writer, noHeader bool, col
 		}
 
 		// Select columns
-		for i, key := range columnNames {
+		for i, key := range colNames {
 			fields[i] = queryMap[key]
 
 			// Reset query map to reuse it
-			queryMap[key] = nilValue
+			queryMap[key] = nilVal
 		}
 
 		// Print a row
@@ -93,18 +93,18 @@ func parseQuery(m QueryMap, query string) (err error) {
 }
 
 func main() {
-	columnNamesPtr := flag.String("c", "", "comma-separated list of column names")
-	nilValuePtr := flag.String("n", "", "a string represents nil value")
-	noHeaderPtr := flag.Bool("no-header", false, "do not print header")
+	pColNames := flag.String("c", "", "comma-separated list of column names")
+	pNilVal := flag.String("n", "", "a string represents nil value")
+	pNoHeader := flag.Bool("no-header", false, "do not print header")
 	flag.Parse()
 
-	columnNames := strings.Split(*columnNamesPtr, ",")
-	if len(columnNames) == 0 {
+	colNames := strings.Split(*pColNames, ",")
+	if len(colNames) == 0 {
 		fmt.Println("Provide one or more columns using -c flag")
 		os.Exit(1)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
-	writer := bufio.NewWriter(os.Stdout)
-	ConvertLines(reader, writer, *noHeaderPtr, columnNames, *nilValuePtr)
+	in := bufio.NewReader(os.Stdin)
+	out := bufio.NewWriter(os.Stdout)
+	ConvertLines(in, out, *pNoHeader, colNames, *pNilVal)
 }
