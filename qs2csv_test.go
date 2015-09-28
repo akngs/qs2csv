@@ -11,28 +11,28 @@ import (
 func TestConvertLines(t *testing.T) {
 	out := new(bytes.Buffer)
 	err := ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(out), false, []string{"a", "b"}, "")
-	equals(t, nil, err)
-	equals(t, "a,b\n1,2\n3,4\n", out.String())
+	equals(t, err, nil)
+	equals(t, out.String(), "a,b\n1,2\n3,4\n")
 }
 
 func TestConvertLinesWithoutHeading(t *testing.T) {
 	out := new(bytes.Buffer)
 	err := ConvertLines(toReader("a=1&b=2\na=3&b=4\n"), bufio.NewWriter(out), true, []string{"a", "b"}, "")
-	equals(t, nil, err)
-	equals(t, "1,2\n3,4\n", out.String())
+	equals(t, err, nil)
+	equals(t, out.String(), "1,2\n3,4\n")
 }
 
 func TestConvertLinesWithNilColumn(t *testing.T) {
 	out := new(bytes.Buffer)
 	err := ConvertLines(toReader("a=1&b=2\nb=3&c=4\n"), bufio.NewWriter(out), false, []string{"a", "c"}, "NA")
 	equals(t, nil, err)
-	equals(t, "a,c\n1,NA\nNA,4\n", out.String())
+	equals(t, out.String(), "a,c\n1,NA\nNA,4\n")
 }
 
 func TestConvertLinesWithMalformedInput(t *testing.T) {
 	out := new(bytes.Buffer)
 	err := ConvertLines(toReader("a=1&b=2\n%XW=3&c=4\n"), bufio.NewWriter(out), false, []string{"a", "c"}, "NA")
-	equals(t, true, err != nil)
+	equals(t, err != nil, true)
 }
 
 func BenchmarkConvertLines(b *testing.B) {
@@ -49,9 +49,9 @@ func BenchmarkConvertLines(b *testing.B) {
 	ConvertLines(toReader(logString), bufio.NewWriter(out), false, []string{"a", "c"}, "NA")
 }
 
-func equals(t *testing.T, expected interface{}, actual interface{}) {
+func equals(t *testing.T, actual interface{}, expected interface{}) {
 	if expected != actual {
-		t.Error(fmt.Sprintf("Expected %#v but %#v", expected, actual))
+		t.Error(fmt.Sprintf("Got %#v want %#v", actual, expected))
 	}
 }
 
